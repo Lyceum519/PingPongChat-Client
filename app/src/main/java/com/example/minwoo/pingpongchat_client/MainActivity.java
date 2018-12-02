@@ -1,11 +1,13 @@
 package com.example.minwoo.pingpongchat_client;
 
 import android.Manifest;
+import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -25,6 +27,18 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.Toast;
+
+import com.google.gson.JsonArray;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -34,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     private int mChannelCount = AudioFormat.CHANNEL_IN_STEREO;
     private int mAudioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int mBufferSize = AudioTrack.getMinBufferSize(mSampleRate, mChannelCount, mAudioFormat);
+    private RetrofitBuilder.PingPongService mPingPongService;
 
     public AudioRecord mAudioRecord = null;
 
@@ -64,6 +79,24 @@ public class MainActivity extends AppCompatActivity {
 
         mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
 
+        // retrofit test code
+        RetrofitBuilder retrofitBuilder = new RetrofitBuilder();
+        mPingPongService = retrofitBuilder.getService();
+        Call<JsonArray> request = mPingPongService.getUsers();
+        request.enqueue(new Callback<JsonArray>() {
+            @Override
+            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
+                Log.d("Success", response.body().toString());
+            }
+            @Override
+            public void onFailure(Call<JsonArray> call, Throwable t) {
+                Log.e("Fail", t.toString());
+                Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_LONG).show();
+                // Code...
+            }
+        });
+
     }
 
     public void onRecord(View view) {
@@ -79,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     byte[] readData = new byte[mBufferSize];
-                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.pcm";
+                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.mp3";
                     FileOutputStream fos = null;
 
                     try {
@@ -105,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
                     try {
                         fos.close();
+                        // test uploading file
+                        uploadFile(mFilepath);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -190,4 +225,50 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1);
         }
     }  //퍼미션 체크
+
+    // upload file to server
+    private void uploadFile(String path) {
+
+        // https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
+        // use the FileUtils to get the actual file by uri
+        File file = new File(path);
+        String strFileName = file.getName();
+        Uri uri = Uri.fromFile(file);
+
+        Log.d("pingpongTest", strFileName);
+        Log.d("pingpongTest2", uri.toString());
+
+        // create RequestBody instance from file
+        RequestBody requestFile =
+                RequestBody.create(
+                        MediaType.parse("audio/mp3"),
+//                        MediaType.parse(getApplicationContext().getContentResolver().getType(uri)),
+                        file
+                );
+
+        // MultipartBody.Part is used to send also the actual file name
+        MultipartBody.Part body =
+                MultipartBody.Part.createFormData("audio", file.getName(), requestFile);
+
+        // add another part within the multipart request
+        String descriptionString = "hello, this is description speaking";
+        RequestBody description =
+                RequestBody.create(
+                        okhttp3.MultipartBody.FORM, descriptionString);
+
+        // finally, execute the request
+        Call<ResponseBody> call = mPingPongService.sendRecord(description, body);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call,
+                                   Response<ResponseBody> response) {
+                Log.v("Upload", "success");
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("Upload error:", t.getMessage());
+            }
+        });
+    }
 }
