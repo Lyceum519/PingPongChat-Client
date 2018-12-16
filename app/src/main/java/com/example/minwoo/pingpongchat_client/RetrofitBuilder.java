@@ -19,7 +19,7 @@ public class RetrofitBuilder {
 
     public RetrofitBuilder() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://172.30.1.23:7001/")
+                .baseUrl("http://192.168.43.119:7001/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }

@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     byte[] readData = new byte[mBufferSize];
-                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.mp3";
+                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.wav";
                     FileOutputStream fos = null;
 
                     try {
@@ -174,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
+
 
                     DataInputStream dis = new DataInputStream(fis);
                     mAudioTrack.play();
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         // create RequestBody instance from file
         RequestBody requestFile =
                 RequestBody.create(
-                        MediaType.parse("audio/mp3"),
+                        MediaType.parse("audio/wav"),
 //                        MediaType.parse(getApplicationContext().getContentResolver().getType(uri)),
                         file
                 );
