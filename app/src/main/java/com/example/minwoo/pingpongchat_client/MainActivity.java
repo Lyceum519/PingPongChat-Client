@@ -220,6 +220,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onServerPlay (View view){
+
+    }
+
     public void permissionCheck() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
                 || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
