@@ -22,6 +22,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -100,6 +102,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onRecord(View view) {
+        // should be get from user info later
+        final String from = "wonyeong";
+        final String to = "minwoo";
+
         if (isRecording == true) {
             isRecording = false;
             mBtRecord.setText("Record");  // 'Stop'버튼 클릭 시, isRecording 상태값을 false로 변경 / 'Record'버튼으로 변경
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     byte[] readData = new byte[mBufferSize];
-                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.wav";
+                    mFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + ".wav";
                     FileOutputStream fos = null;
 
                     try {
@@ -139,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         fos.close();
                         // test uploading file
-                        uploadFile(mFilepath);
+                        uploadFile(mFilepath, from, to);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -221,7 +227,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onServerPlay (View view){
+        // should be get from user info later
+        final String from = "wonyeong";
+        final String to = "minwoo";
+        Call<ResponseBody> call = mPingPongService.getRecordFrom(from, to);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call,
+                                   Response<ResponseBody> response) {
+                boolean writtenToDisk = HandleResponse.writeResponseBodyToDisk(response.body(), from, to);
+                Log.v("getRecordFrom success", "success : " + writtenToDisk);
+            }
 
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                Log.e("getRecordFrom fail:", t.getMessage());
+            }
+        });
     }
 
     public void permissionCheck() {
@@ -232,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
     }  //퍼미션 체크
 
     // upload file to server
-    private void uploadFile(String path) {
+    private void uploadFile(String path, String from, String to) {
 
         // https://github.com/iPaulPro/aFileChooser/blob/master/aFileChooser/src/com/ipaulpro/afilechooser/utils/FileUtils.java
         // use the FileUtils to get the actual file by uri
@@ -262,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
                         okhttp3.MultipartBody.FORM, descriptionString);
 
         // finally, execute the request
-        Call<ResponseBody> call = mPingPongService.sendRecord(description, body);
+        Call<ResponseBody> call = mPingPongService.sendRecord(description, body, from ,to);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call,
@@ -276,4 +298,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 }
