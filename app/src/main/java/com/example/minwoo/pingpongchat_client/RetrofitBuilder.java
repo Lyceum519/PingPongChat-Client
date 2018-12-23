@@ -13,13 +13,14 @@ import retrofit2.http.Multipart;
 import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public class RetrofitBuilder {
     Retrofit retrofit;
 
     public RetrofitBuilder() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://172.30.1.4:7001/")
+                .baseUrl("http://192.168.43.119:7001/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -39,6 +40,12 @@ public class RetrofitBuilder {
         @Multipart
         @POST("record")
         Call<ResponseBody> sendRecord(@Part("description") RequestBody description,
-                                      @Part MultipartBody.Part file);
+                                      @Part MultipartBody.Part file,
+                                      @Query("from") String from,
+                                      @Query("to") String to);
+
+        @GET("records/who")
+        Call<ResponseBody> getRecordFrom(@Query("from") String from,
+                                         @Query("to") String to);
     }
 }
