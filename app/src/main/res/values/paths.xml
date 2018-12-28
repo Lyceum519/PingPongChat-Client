@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="path_circle">M 2,6
+        C 2,3.8 3.8,2 6,2
+        C 8.2,2 10,3.8 10,6
+        C 10,8.2 8.2,10 6,10
+        C 3.8,10 2,8.2 2,6</string>
+    <string name="path_rounded_rectangle">M 4,6
+        C 4,4 4,4 6,4
+        C 8,4 8,4 8,6
+        C 8,8 8,8 6,8
+        C 4,8 4,8 4,6 </string>
+</resources>

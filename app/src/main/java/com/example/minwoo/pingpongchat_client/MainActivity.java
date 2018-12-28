@@ -2,6 +2,7 @@ package com.example.minwoo.pingpongchat_client;
 
 import android.Manifest;
 import android.content.Context;
+import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -9,11 +10,13 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.Button;
 
 import java.io.DataInputStream;
@@ -29,6 +32,7 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.gson.JsonArray;
@@ -66,12 +70,36 @@ public class MainActivity extends AppCompatActivity {
 
     public String mFilepath = null;
 
+    public ImageView mIV_record = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         permissionCheck();
+
+        mIV_record = (ImageView)findViewById(R.id.record);
+
+        mIV_record.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+
+                if(mIV_record.getTag()==null) {
+                    AnimatedVectorDrawable animatedVectorDrawable =
+                            (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_record_to_stop);
+                    mIV_record.setImageDrawable(animatedVectorDrawable);
+                    animatedVectorDrawable.start();
+                    mIV_record.setTag(0);
+                } else {
+                    AnimatedVectorDrawable animatedVectorDrawable =
+                            (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
+                    mIV_record.setImageDrawable(animatedVectorDrawable);
+                    animatedVectorDrawable.start();
+                    mIV_record.setTag(null);
+                }
+
+            }
+        });
 
         mBtRecord = (Button) findViewById(R.id.bt_record);
         mBtPlay = (Button) findViewById(R.id.bt_play);
