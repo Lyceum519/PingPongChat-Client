@@ -65,10 +65,10 @@ public class MainActivity extends AppCompatActivity {
     public Thread mPlayThread = null;
     public boolean isPlaying = false;
 
-    public Button mBtRecord = null;
     public Button mBtPlay = null;
 
     public String mFilepath = null;
+    public String sFilepath = null;
 
     public ImageView mIV_record = null;
 
@@ -81,27 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
         mIV_record = (ImageView)findViewById(R.id.record);
 
-        mIV_record.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-
-                if(mIV_record.getTag()==null) {
-                    AnimatedVectorDrawable animatedVectorDrawable =
-                            (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_record_to_stop);
-                    mIV_record.setImageDrawable(animatedVectorDrawable);
-                    animatedVectorDrawable.start();
-                    mIV_record.setTag(0);
-                } else {
-                    AnimatedVectorDrawable animatedVectorDrawable =
-                            (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
-                    mIV_record.setImageDrawable(animatedVectorDrawable);
-                    animatedVectorDrawable.start();
-                    mIV_record.setTag(null);
-                }
-
-            }
-        });
-
-        mBtRecord = (Button) findViewById(R.id.bt_record);
         mBtPlay = (Button) findViewById(R.id.bt_play);
 
         mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
@@ -134,13 +113,21 @@ public class MainActivity extends AppCompatActivity {
         final String from = "wonyeong";
         final String to = "minwoo";
 
-        if (isRecording == true) {
+        if(isRecording==true) {
             isRecording = false;
-            mBtRecord.setText("Record");  // 'Stop'버튼 클릭 시, isRecording 상태값을 false로 변경 / 'Record'버튼으로 변경
+            AnimatedVectorDrawable animatedVectorDrawable =
+                    (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
+            mIV_record.setImageDrawable(animatedVectorDrawable);
+            animatedVectorDrawable.start();
+
 
         } else {
             isRecording = true;
-            mBtRecord.setText("Stop");  // 'Record'버튼 클릭 시, isRecording 상태값을 true로 변경 / 'Stop'버튼으로 변경
+            AnimatedVectorDrawable animatedVectorDrawable =
+                    (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_record_to_stop);
+            mIV_record.setImageDrawable(animatedVectorDrawable);
+            animatedVectorDrawable.start();
+
 
             mRecordThread = new Thread(new Runnable() {
                 @Override
@@ -258,6 +245,8 @@ public class MainActivity extends AppCompatActivity {
         // should be get from user info later
         final String from = "wonyeong";
         final String to = "minwoo";
+        sFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + "_Sever.wav";
+
         Call<ResponseBody> call = mPingPongService.getRecordFrom(from, to);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -265,6 +254,70 @@ public class MainActivity extends AppCompatActivity {
                                    Response<ResponseBody> response) {
                 boolean writtenToDisk = HandleResponse.writeResponseBodyToDisk(response.body(), from, to);
                 Log.v("getRecordFrom success", "success : " + writtenToDisk);
+
+                if (isPlaying == true) {
+                    isPlaying = false;
+                    mBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
+                } else {
+                    isPlaying = true;
+                    mBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
+
+                    mPlayThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            byte[] writeData = new byte[mBufferSize];
+                            FileInputStream fis = null;
+                            try {
+                                fis = new FileInputStream(sFilepath);
+                            } catch (FileNotFoundException e) {
+                                e.printStackTrace();
+                            }
+
+
+                            DataInputStream dis = new DataInputStream(fis);
+                            mAudioTrack.play();
+
+                            while (isPlaying) {
+                                try {
+                                    int ret = dis.read(writeData, 0, mBufferSize);
+                                    if (ret <= 0) {
+                                        (MainActivity.this).runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                isPlaying = false;
+                                                mBtPlay.setText("Play");
+                                            }
+                                        });
+
+                                        break;
+                                    }
+                                    mAudioTrack.write(writeData, 0, ret);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            mAudioTrack.stop();
+                            mAudioTrack.release();
+                            mAudioTrack = null;
+
+
+                            try {
+                                dis.close();
+                                fis.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+
+                    if (mAudioTrack == null) {
+                        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
+                    }
+                    mPlayThread.start();
+                }
+
             }
 
             @Override

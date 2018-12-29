@@ -15,7 +15,7 @@ public class HandleResponse {
     public static boolean writeResponseBodyToDisk(ResponseBody body, String from, String to) {
         try {
             // todo change the file location/name according to your needs
-            File futureStudioIconFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + ".wav");
+            File futureStudioIconFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + "_Sever.wav");
 
             InputStream inputStream = null;
             OutputStream outputStream = null;
