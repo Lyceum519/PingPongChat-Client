@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     public Thread mPlayThread = null;
     public boolean isPlaying = false;
 
-    public Button mBtPlay = null;
+    public Button sBtPlay = null;
 
     public String mFilepath = null;
     public String sFilepath = null;
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         mIV_record = (ImageView)findViewById(R.id.record);
 
-        mBtPlay = (Button) findViewById(R.id.bt_play);
+        sBtPlay = (Button) findViewById(R.id.bt_play);
 
         mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
         mAudioRecord.startRecording();
@@ -113,13 +113,12 @@ public class MainActivity extends AppCompatActivity {
         final String from = "wonyeong";
         final String to = "minwoo";
 
-        if(isRecording==true) {
+        if(isRecording == true) {
             isRecording = false;
             AnimatedVectorDrawable animatedVectorDrawable =
                     (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
             mIV_record.setImageDrawable(animatedVectorDrawable);
             animatedVectorDrawable.start();
-
 
         } else {
             isRecording = true;
@@ -127,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
                     (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_record_to_stop);
             mIV_record.setImageDrawable(animatedVectorDrawable);
             animatedVectorDrawable.start();
-
 
             mRecordThread = new Thread(new Runnable() {
                 @Override
@@ -167,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
             if (mAudioRecord == null) {
                 mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
                 mAudioRecord.startRecording();
@@ -177,12 +174,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPlay(View view) {
+
+        if(mFilepath==null){
+            Toast.makeText(MainActivity.this, "재생할 파일이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (isPlaying == true) {
             isPlaying = false;
-            mBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
+            sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
         } else {
             isPlaying = true;
-            mBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
+            sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
 
             mPlayThread = new Thread(new Runnable() {
                 @Override
@@ -191,11 +194,11 @@ public class MainActivity extends AppCompatActivity {
                     byte[] writeData = new byte[mBufferSize];
                     FileInputStream fis = null;
                     try {
-                        fis = new FileInputStream(mFilepath);
+                            fis = new FileInputStream(mFilepath);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                        mPlayThread.interrupt();
                     }
-
 
                     DataInputStream dis = new DataInputStream(fis);
                     mAudioTrack.play();
@@ -208,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         isPlaying = false;
-                                        mBtPlay.setText("Play");
+                                        sBtPlay.setText("Play");
                                     }
                                 });
 
@@ -223,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
                     mAudioTrack.stop();
                     mAudioTrack.release();
                     mAudioTrack = null;
-
 
                     try {
                         dis.close();
@@ -257,10 +259,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isPlaying == true) {
                     isPlaying = false;
-                    mBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
+                    sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
                 } else {
                     isPlaying = true;
-                    mBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
+                    sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
 
                     mPlayThread = new Thread(new Runnable() {
                         @Override
@@ -269,11 +271,11 @@ public class MainActivity extends AppCompatActivity {
                             byte[] writeData = new byte[mBufferSize];
                             FileInputStream fis = null;
                             try {
+
                                 fis = new FileInputStream(sFilepath);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
                             }
-
 
                             DataInputStream dis = new DataInputStream(fis);
                             mAudioTrack.play();
@@ -286,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
                                             @Override
                                             public void run() {
                                                 isPlaying = false;
-                                                mBtPlay.setText("Play");
+                                                sBtPlay.setText("Play");
                                             }
                                         });
 
@@ -302,7 +304,6 @@ public class MainActivity extends AppCompatActivity {
                             mAudioTrack.release();
                             mAudioTrack = null;
 
-
                             try {
                                 dis.close();
                                 fis.close();
@@ -313,7 +314,13 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     if (mAudioTrack == null) {
-                        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
+                        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+                                mSampleRate,
+                                mChannelCount,
+                                mAudioFormat,
+                                mBufferSize,
+                                AudioTrack.MODE_STREAM
+                        );
                     }
                     mPlayThread.start();
                 }
