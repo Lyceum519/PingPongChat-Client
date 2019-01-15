@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "54618363609",
+    "firebase_url": "https://pingpongchat.firebaseio.com",
+    "project_id": "pingpongchat",
+    "storage_bucket": "pingpongchat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54618363609:android:70a90ed83f4a7b17",
+        "android_client_info": {
+          "package_name": "com.example.minwoo.pingpongchat_client"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "54618363609-juc0jd4ckgct0ndmfp1emritcu38bliv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.minwoo.pingpongchat_client",
+            "certificate_hash": "5eb90b2f80b5ba183fb9dde9be52945116cc2652"
+          }
+        },
+        {
+          "client_id": "54618363609-gf6br8b3i3jvs5c7fjc0asdfum969m3u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKmRHjCeuulZ0H4x9jqPmZClLpjVnYFHA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "54618363609-gf6br8b3i3jvs5c7fjc0asdfum969m3u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

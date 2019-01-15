@@ -2,6 +2,7 @@ package com.example.minwoo.pingpongchat_client;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -35,6 +36,10 @@ import android.support.v4.content.ContextCompat;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.JsonArray;
 
 import okhttp3.MediaType;
@@ -65,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     public Thread mPlayThread = null;
     public boolean isPlaying = false;
 
-    public Button mBtPlay = null;
+    public Button sBtPlay = null;
 
     public String mFilepath = null;
     public String sFilepath = null;
@@ -79,9 +84,9 @@ public class MainActivity extends AppCompatActivity {
 
         permissionCheck();
 
-        mIV_record = (ImageView)findViewById(R.id.record);
+        mIV_record = (ImageView) findViewById(R.id.record);
 
-        mBtPlay = (Button) findViewById(R.id.bt_play);
+        sBtPlay = (Button) findViewById(R.id.bt_play);
 
         mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
         mAudioRecord.startRecording();
@@ -98,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
                 Log.d("Success", response.body().toString());
             }
+
             @Override
             public void onFailure(Call<JsonArray> call, Throwable t) {
                 Log.e("Fail", t.toString());
@@ -113,13 +119,12 @@ public class MainActivity extends AppCompatActivity {
         final String from = "wonyeong";
         final String to = "minwoo";
 
-        if(isRecording==true) {
+        if (isRecording == true) {
             isRecording = false;
             AnimatedVectorDrawable animatedVectorDrawable =
                     (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
             mIV_record.setImageDrawable(animatedVectorDrawable);
             animatedVectorDrawable.start();
-
 
         } else {
             isRecording = true;
@@ -127,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
                     (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_record_to_stop);
             mIV_record.setImageDrawable(animatedVectorDrawable);
             animatedVectorDrawable.start();
-
 
             mRecordThread = new Thread(new Runnable() {
                 @Override
@@ -167,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-
             if (mAudioRecord == null) {
                 mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
                 mAudioRecord.startRecording();
@@ -177,12 +180,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPlay(View view) {
+        if (mFilepath == null) {
+            Toast.makeText(MainActivity.this, "재생할 파일이 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (isPlaying == true) {
             isPlaying = false;
-            mBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
+            sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
         } else {
             isPlaying = true;
-            mBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
+            sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
 
             mPlayThread = new Thread(new Runnable() {
                 @Override
@@ -194,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
                         fis = new FileInputStream(mFilepath);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
+                        mPlayThread.interrupt();
                     }
-
 
                     DataInputStream dis = new DataInputStream(fis);
                     mAudioTrack.play();
@@ -208,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void run() {
                                         isPlaying = false;
-                                        mBtPlay.setText("Play");
+                                        sBtPlay.setText("Play");
                                     }
                                 });
 
@@ -224,7 +232,6 @@ public class MainActivity extends AppCompatActivity {
                     mAudioTrack.release();
                     mAudioTrack = null;
 
-
                     try {
                         dis.close();
                         fis.close();
@@ -237,11 +244,11 @@ public class MainActivity extends AppCompatActivity {
             if (mAudioTrack == null) {
                 mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
             }
-                mPlayThread.start();
+            mPlayThread.start();
         }
     }
 
-    public void onServerPlay (View view){
+    public void onServerPlay(View view) {
         // should be get from user info later
         final String from = "wonyeong";
         final String to = "minwoo";
@@ -257,10 +264,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isPlaying == true) {
                     isPlaying = false;
-                    mBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
+                    sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
                 } else {
                     isPlaying = true;
-                    mBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
+                    sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
 
                     mPlayThread = new Thread(new Runnable() {
                         @Override
@@ -274,7 +281,6 @@ public class MainActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
 
-
                             DataInputStream dis = new DataInputStream(fis);
                             mAudioTrack.play();
 
@@ -286,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
                                             @Override
                                             public void run() {
                                                 isPlaying = false;
-                                                mBtPlay.setText("Play");
+                                                sBtPlay.setText("Play");
                                             }
                                         });
 
@@ -302,7 +308,6 @@ public class MainActivity extends AppCompatActivity {
                             mAudioTrack.release();
                             mAudioTrack = null;
 
-
                             try {
                                 dis.close();
                                 fis.close();
@@ -313,11 +318,16 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     if (mAudioTrack == null) {
-                        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
+                        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+                                mSampleRate,
+                                mChannelCount,
+                                mAudioFormat,
+                                mBufferSize,
+                                AudioTrack.MODE_STREAM
+                        );
                     }
                     mPlayThread.start();
                 }
-
             }
 
             @Override
@@ -365,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
                         okhttp3.MultipartBody.FORM, descriptionString);
 
         // finally, execute the request
-        Call<ResponseBody> call = mPingPongService.sendRecord(description, body, from ,to);
+        Call<ResponseBody> call = mPingPongService.sendRecord(description, body, from, to);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call,
@@ -380,5 +390,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    //Google Logout
+    public void signOut(View view) {
+        LoginActivity.mGoogleSignInClient
+                .signOut()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(MainActivity.this, "로그아웃 성공", Toast.LENGTH_SHORT).show();
+                        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                        MainActivity.this.startActivity(loginIntent);
+                    }
+                });
+    }
 }
