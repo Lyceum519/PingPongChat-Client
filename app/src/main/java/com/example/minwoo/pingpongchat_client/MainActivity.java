@@ -2,6 +2,7 @@ package com.example.minwoo.pingpongchat_client;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -35,6 +36,10 @@ import android.support.v4.content.ContextCompat;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.gson.JsonArray;
 
 import okhttp3.MediaType;
@@ -79,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
         permissionCheck();
 
-        mIV_record = (ImageView)findViewById(R.id.record);
+        mIV_record = (ImageView) findViewById(R.id.record);
 
         sBtPlay = (Button) findViewById(R.id.bt_play);
 
@@ -98,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
                 Log.d("Success", response.body().toString());
             }
+
             @Override
             public void onFailure(Call<JsonArray> call, Throwable t) {
                 Log.e("Fail", t.toString());
@@ -113,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         final String from = "wonyeong";
         final String to = "minwoo";
 
-        if(isRecording == true) {
+        if (isRecording == true) {
             isRecording = false;
             AnimatedVectorDrawable animatedVectorDrawable =
                     (AnimatedVectorDrawable) getDrawable(R.drawable.anim_vector_stop_to_record);
@@ -174,8 +180,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onPlay(View view) {
-
-        if(mFilepath==null){
+        if (mFilepath == null) {
             Toast.makeText(MainActivity.this, "재생할 파일이 없습니다.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -194,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                     byte[] writeData = new byte[mBufferSize];
                     FileInputStream fis = null;
                     try {
-                            fis = new FileInputStream(mFilepath);
+                        fis = new FileInputStream(mFilepath);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                         mPlayThread.interrupt();
@@ -239,11 +244,11 @@ public class MainActivity extends AppCompatActivity {
             if (mAudioTrack == null) {
                 mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
             }
-                mPlayThread.start();
+            mPlayThread.start();
         }
     }
 
-    public void onServerPlay (View view){
+    public void onServerPlay(View view) {
         // should be get from user info later
         final String from = "wonyeong";
         final String to = "minwoo";
@@ -271,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
                             byte[] writeData = new byte[mBufferSize];
                             FileInputStream fis = null;
                             try {
-
                                 fis = new FileInputStream(sFilepath);
                             } catch (FileNotFoundException e) {
                                 e.printStackTrace();
@@ -324,7 +328,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     mPlayThread.start();
                 }
-
             }
 
             @Override
@@ -372,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
                         okhttp3.MultipartBody.FORM, descriptionString);
 
         // finally, execute the request
-        Call<ResponseBody> call = mPingPongService.sendRecord(description, body, from ,to);
+        Call<ResponseBody> call = mPingPongService.sendRecord(description, body, from, to);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call,
@@ -387,5 +390,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-
+    //Google Logout
+    public void signOut(View view) {
+        LoginActivity.mGoogleSignInClient
+                .signOut()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(MainActivity.this, "로그아웃 성공", Toast.LENGTH_SHORT).show();
+                        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                        MainActivity.this.startActivity(loginIntent);
+                    }
+                });
+    }
 }
