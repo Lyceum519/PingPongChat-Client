@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PingPongChat-Client</string>
+    <string name="server_client_id">54618363609-gf6br8b3i3jvs5c7fjc0asdfum969m3u.apps.googleusercontent.com</string>
+    <string name="loading">loading</string>
 </resources>
