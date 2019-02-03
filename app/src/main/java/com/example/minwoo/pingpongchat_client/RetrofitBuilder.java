@@ -24,7 +24,7 @@ public class RetrofitBuilder {
 
     public RetrofitBuilder() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.1.202:7001/")
+                .baseUrl("http://192.168.28.7:7001/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -51,7 +51,7 @@ public class RetrofitBuilder {
         @GET("records/who")
         Call<ResponseBody> getRecordFrom(@Query("from") String from,
                                          @Query("to") String to);
-        
+
         @POST("signin")
         Call<JsonArray> signin(@Body JsonObject data);
     }

@@ -109,7 +109,6 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
             opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
                 @Override
                 public void onResult(GoogleSignInResult googleSignInResult) {
-                    hideProgressDialog();
                     handleSignInResultOnStart(googleSignInResult);
                 }
             });
@@ -124,10 +123,16 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
-            try {
-                // 구글 로그인 성공
-                GoogleSignInAccount account = task.getResult(ApiException.class);
+        }
+    }
 
+    private void handleSignInResultOnStart(GoogleSignInResult result) {
+        Log.d("TAG", "handleSignInResult:" + result.isSuccess());
+        if (result.isSuccess()) {
+            try {
+                GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+
+                // Signed in Google successfully, try to sign in to Server.
                 String personName = account.getDisplayName();
                 String personEmail = account.getEmail();
                 String personId = account.getId();
@@ -146,53 +151,74 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
                 request.enqueue(new Callback<JsonArray>() {
                     @Override
                     public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
-                        // 레알 성공
-                        Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                        Log.d("Success", response.body().toString());
+                        //서버 로그인 성공
+                        hideProgressDialog();
+                        //Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
+                        //Log.d("Server Login Success", response.body().toString());
+                        Intent loginIntent = new Intent(LoginActivity.this, FriendListActivity.class);
+                        LoginActivity.this.startActivity(loginIntent);
                     }
 
                     @Override
                     public void onFailure(Call<JsonArray> call, Throwable t) {
-                        // 구글은 성공햇지만 서버에서 실패
-                        Log.e("Fail", t.toString());
-                        Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_LONG).show();
-                        // Code...
+                        // 서버 로그인 실패
+                        hideProgressDialog();
+                        Log.e("Server Login Fail", t.toString());
+                        Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-            } catch (ApiException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private void handleSignInResultOnStart(GoogleSignInResult result) {
-        Log.d("TAG", "handleSignInResult:" + result.isSuccess());
-        if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
-            Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-            Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
-            LoginActivity.this.startActivity(loginIntent);
         } else {
             // Signed out, show unauthenticated UI.
-            Toast.makeText(LoginActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(LoginActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
+            hideProgressDialog();
+            Log.e("GoogleLogin ","Google silent sign in failed" );
         }
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            showProgressDialog();
 
-            // Signed in successfully, show authenticated UI.
-            // 로그인 성공
-            Toast.makeText(LoginActivity.this, "로그인 성공", Toast.LENGTH_SHORT).show();
-            Intent loginIntent = new Intent(LoginActivity.this, MainActivity.class);
-            LoginActivity.this.startActivity(loginIntent);
+            // Signed in Google successfully, try to sign in to Server.
+            String personName = account.getDisplayName();
+            String personEmail = account.getEmail();
+            String personId = account.getId();
+            String personIdToken = account.getIdToken();
+            JsonObject personData = new JsonObject();
+            personData.addProperty("email", personEmail);
+            personData.addProperty("token", personIdToken);
+
+            Log.i("GoogleLogin", "personName=" + personName);
+            Log.i("GoogleLogin", "personEmail=" + personEmail);
+            Log.i("GoogleLogin", "personId=" + personId);
+            Log.i("GoogleLogin", "personIdToken=" + personIdToken);
+
+            Call<JsonArray> request = mPingPongService.signin(personData);
+
+            request.enqueue(new Callback<JsonArray>() {
+                @Override
+                public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                    //서버 로그인 성공
+                    hideProgressDialog();
+                    //Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
+                    //Log.d("Server Login Success", response.body().toString());
+                    Intent loginIntent = new Intent(LoginActivity.this, FriendListActivity.class);
+                    LoginActivity.this.startActivity(loginIntent);
+                }
+
+                @Override
+                public void onFailure(Call<JsonArray> call, Throwable t) {
+                    // 서버 로그인 실패
+                    hideProgressDialog();
+                    Log.e("Server Login Fail", t.toString());
+                    Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
+                }
+            });
         } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w("TAG", "signInResult:failed code=" + e.getStatusCode());
-            Toast.makeText(LoginActivity.this,"로그인 실패",Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
     }
@@ -208,7 +234,6 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
             mProgressDialog.setMessage(getString(R.string.loading));
             mProgressDialog.setIndeterminate(true);
         }
-
         mProgressDialog.show();
     }
 
