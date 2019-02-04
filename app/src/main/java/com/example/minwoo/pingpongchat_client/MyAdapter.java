@@ -17,6 +17,9 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.ArrayList;
 
 public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private ArrayList<UserInfo> UserInfoArrayList;
+    Context mContext;
+
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         TextView tvPersonName;
         TextView tvPersonEmail;
@@ -30,11 +33,8 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
-    private ArrayList<UserInfo> UserInfoArrayList;
-    Context context;
-
     MyAdapter(Context context, ArrayList<UserInfo> UserInfoArrayList) {
-        this.context = context;
+        this.mContext = context;
         this.UserInfoArrayList = UserInfoArrayList;
     }
 
@@ -49,7 +49,7 @@ public class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         MyViewHolder myViewHolder = (MyViewHolder) holder;
         myViewHolder.tvPersonName.setText(UserInfoArrayList.get(position).personName);
         myViewHolder.tvPersonEmail.setText(UserInfoArrayList.get(position).personEmail);
-        Glide.with(context)
+        Glide.with(mContext)
              .load(UserInfoArrayList.get(position).personPhotoUrl)
              .into(myViewHolder.ivPersonPhoto);
     }

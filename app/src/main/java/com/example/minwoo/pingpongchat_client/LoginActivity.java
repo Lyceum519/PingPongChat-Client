@@ -52,7 +52,6 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
     private ProgressDialog mProgressDialog;
     private RetrofitBuilder.PingPongService mPingPongService;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

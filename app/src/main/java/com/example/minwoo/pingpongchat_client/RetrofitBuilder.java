@@ -54,5 +54,8 @@ public class RetrofitBuilder {
 
         @POST("signin")
         Call<JsonArray> signin(@Body JsonObject data);
+
+        @POST("signout")
+        Call<JsonArray> signout(@Body JsonObject data);
     }
 }
