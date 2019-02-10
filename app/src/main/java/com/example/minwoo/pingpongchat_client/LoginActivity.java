@@ -132,40 +132,8 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
                 GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 
                 // Signed in Google successfully, try to sign in to Server.
-                String personName = account.getDisplayName();
-                String personEmail = account.getEmail();
-                String personId = account.getId();
-                String personIdToken = account.getIdToken();
-                JsonObject personData = new JsonObject();
-                personData.addProperty("email", personEmail);
-                personData.addProperty("token", personIdToken);
-
-                Log.i("GoogleLogin", "personName=" + personName);
-                Log.i("GoogleLogin", "personEmail=" + personEmail);
-                Log.i("GoogleLogin", "personId=" + personId);
-                Log.i("GoogleLogin", "personIdToken=" + personIdToken);
-
-                Call<JsonArray> request = mPingPongService.signin(personData);
-
-                request.enqueue(new Callback<JsonArray>() {
-                    @Override
-                    public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
-                        //서버 로그인 성공
-                        hideProgressDialog();
-                        //Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                        //Log.d("Server Login Success", response.body().toString());
-                        Intent loginIntent = new Intent(LoginActivity.this, FriendListActivity.class);
-                        LoginActivity.this.startActivity(loginIntent);
-                    }
-
-                    @Override
-                    public void onFailure(Call<JsonArray> call, Throwable t) {
-                        // 서버 로그인 실패
-                        hideProgressDialog();
-                        Log.e("Server Login Fail", t.toString());
-                        Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                JsonObject personData = addProperty(account);
+                requestResult(personData);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -183,40 +151,8 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
             showProgressDialog();
 
             // Signed in Google successfully, try to sign in to Server.
-            String personName = account.getDisplayName();
-            String personEmail = account.getEmail();
-            String personId = account.getId();
-            String personIdToken = account.getIdToken();
-            JsonObject personData = new JsonObject();
-            personData.addProperty("email", personEmail);
-            personData.addProperty("token", personIdToken);
-
-            Log.i("GoogleLogin", "personName=" + personName);
-            Log.i("GoogleLogin", "personEmail=" + personEmail);
-            Log.i("GoogleLogin", "personId=" + personId);
-            Log.i("GoogleLogin", "personIdToken=" + personIdToken);
-
-            Call<JsonArray> request = mPingPongService.signin(personData);
-
-            request.enqueue(new Callback<JsonArray>() {
-                @Override
-                public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
-                    //서버 로그인 성공
-                    hideProgressDialog();
-                    //Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                    //Log.d("Server Login Success", response.body().toString());
-                    Intent loginIntent = new Intent(LoginActivity.this, FriendListActivity.class);
-                    LoginActivity.this.startActivity(loginIntent);
-                }
-
-                @Override
-                public void onFailure(Call<JsonArray> call, Throwable t) {
-                    // 서버 로그인 실패
-                    hideProgressDialog();
-                    Log.e("Server Login Fail", t.toString());
-                    Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
-                }
-            });
+            JsonObject personData = addProperty(account);
+            requestResult(personData);
         } catch (ApiException e) {
             e.printStackTrace();
         }
@@ -249,5 +185,47 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
         // the failure silently
 
         // ...
+    }
+
+    private JsonObject addProperty(GoogleSignInAccount account){
+        String personName = account.getDisplayName();
+        String personEmail = account.getEmail();
+        String personIdToken = account.getIdToken();
+        String personPhotoUrl = account.getPhotoUrl().toString();
+        JsonObject personData = new JsonObject();
+        personData.addProperty("name", personName);
+        personData.addProperty("email", personEmail);
+        personData.addProperty("token", personIdToken);
+        personData.addProperty("photo", personPhotoUrl);
+
+        Log.i("GoogleLogin", "personName=" + personName);
+        Log.i("GoogleLogin", "personEmail=" + personEmail);
+        Log.i("GoogleLogin", "personIdToken=" + personIdToken);
+        Log.i("GoogleLogin", "personPhotoUrl=" + personPhotoUrl);
+
+        return personData;
+    }
+
+    private void requestResult(JsonObject personData){
+        Call<JsonArray> request = mPingPongService.signin(personData);
+        request.enqueue(new Callback<JsonArray>() {
+            @Override
+            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                //서버 로그인 성공
+                hideProgressDialog();
+                //Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
+                //Log.d("Server Login Success", response.body().toString());
+                Intent loginIntent = new Intent(LoginActivity.this, FriendListActivity.class);
+                LoginActivity.this.startActivity(loginIntent);
+            }
+
+            @Override
+            public void onFailure(Call<JsonArray> call, Throwable t) {
+                // 서버 로그인 실패
+                hideProgressDialog();
+                Log.e("Server Login Fail", t.toString());
+                Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

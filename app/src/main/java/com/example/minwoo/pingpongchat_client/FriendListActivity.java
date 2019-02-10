@@ -1,5 +1,6 @@
 package com.example.minwoo.pingpongchat_client;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,15 +17,25 @@ import android.widget.Toast;
 import com.example.minwoo.pingpongchat_client.LoginActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.gson.JsonArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import com.google.gson.Gson;
 
 public class FriendListActivity extends AppCompatActivity {
 
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
     private GestureDetector gestureDetector;
+    private RetrofitBuilder.PingPongService mPingPongService;
+    public static List<FriendInfo> FriendInfo = new ArrayList<>();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,12 +58,8 @@ public class FriendListActivity extends AppCompatActivity {
         final GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
         if (acct != null) {
             String personName = acct.getDisplayName();
-            String personGivenName = acct.getGivenName();
-            String personFamilyName = acct.getFamilyName();
             String personEmail = acct.getEmail();
-            String personId = acct.getId();
             String personPhotoUrl = acct.getPhotoUrl().toString();
-
             Log.i("GoogleLogin2", "personName=" + personName);
             Log.i("GoogleLogin2", "personEmail=" + personEmail);
             Log.i("GoogleLogin2", "personPhoto=" + personPhotoUrl);
@@ -96,5 +103,38 @@ public class FriendListActivity extends AppCompatActivity {
             }
         };
         mRecyclerView.addOnItemTouchListener(onItemTouchListener);
+
+        RetrofitBuilder retrofitBuilder = new RetrofitBuilder();
+        mPingPongService = retrofitBuilder.getService();
+        Call<List<FriendInfo>> request = mPingPongService.getUsers();
+        request.enqueue(new Callback<List<FriendInfo>>() {
+            @Override
+            public void onResponse(Call<List<FriendInfo>> call, Response<List<FriendInfo>> response) {
+                try {
+                    FriendInfo = response.body();
+                    for (int i = 0; i < FriendInfo.size(); i++) {
+                        String friendName = FriendInfo.get(i).getFriendName();
+                        String friendEmail = FriendInfo.get(i).getfriendEmail();
+                        String friendPhoto = FriendInfo.get(i).getFriendPhoto();
+                        UserInfoArrayList.add(new UserInfo(friendName, friendEmail, friendPhoto));
+                        MyAdapter myAdapter = new MyAdapter(FriendListActivity.this, UserInfoArrayList);
+                        mRecyclerView.setAdapter(myAdapter);
+                        Log.i("HASIL", "friendEmail: "+friendEmail);
+                        Log.i("HASIL", "friendName: "+friendName);
+                        Log.i("HASIL", "friendPhoto: "+friendPhoto);
+                    }
+                } catch (Exception e) {
+                    Log.d("onResponse", "There is an error");
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<FriendInfo>> call, Throwable t) {
+                Log.e("Fail!!", t.toString());
+                Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_LONG).show();
+                // Code...
+            }
+        });
     }
 }

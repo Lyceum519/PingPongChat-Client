@@ -1,9 +1,13 @@
 package com.example.minwoo.pingpongchat_client;
 
+import android.content.Intent;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import org.json.JSONObject;
+
+import java.util.List;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -12,6 +16,7 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
+import retrofit2.http.Field;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -24,7 +29,7 @@ public class RetrofitBuilder {
 
     public RetrofitBuilder() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://192.168.28.7:7001/")
+                .baseUrl("http://172.20.10.2:7001/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -39,7 +44,7 @@ public class RetrofitBuilder {
 
     public interface PingPongService {
         @GET("users")
-        Call<JsonArray> getUsers();
+        Call<List<FriendInfo>> getUsers();
 
         @Multipart
         @POST("record")

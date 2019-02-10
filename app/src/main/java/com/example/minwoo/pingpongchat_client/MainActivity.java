@@ -93,25 +93,8 @@ public class MainActivity extends AppCompatActivity {
 
         mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
 
-        // retrofit test code
         RetrofitBuilder retrofitBuilder = new RetrofitBuilder();
         mPingPongService = retrofitBuilder.getService();
-        Call<JsonArray> request = mPingPongService.getUsers();
-        request.enqueue(new Callback<JsonArray>() {
-            @Override
-            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
-                Toast.makeText(getApplicationContext(), response.toString(), Toast.LENGTH_LONG).show();
-                Log.d("Success", response.body().toString());
-            }
-
-            @Override
-            public void onFailure(Call<JsonArray> call, Throwable t) {
-                Log.e("Fail", t.toString());
-                Toast.makeText(getApplicationContext(), "Fail", Toast.LENGTH_LONG).show();
-                // Code...
-            }
-        });
-
     }
 
     public void onRecord(View view) {
