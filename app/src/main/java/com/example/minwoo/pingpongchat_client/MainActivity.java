@@ -1,8 +1,8 @@
 package com.example.minwoo.pingpongchat_client;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -10,15 +10,22 @@ import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Animation;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -26,21 +33,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import android.Manifest;
-import android.content.pm.PackageManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.widget.ImageView;
-import android.widget.Toast;
-
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.gson.JsonArray;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -49,7 +41,6 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -60,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private int mAudioFormat = AudioFormat.ENCODING_PCM_16BIT;
     private int mBufferSize = AudioTrack.getMinBufferSize(mSampleRate, mChannelCount, mAudioFormat);
     private RetrofitBuilder.PingPongService mPingPongService;
+    public UserInfo userInfo;
 
     public AudioRecord mAudioRecord = null;
 
@@ -76,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
     public String sFilepath = null;
 
     public ImageView mIV_record = null;
+
+    public String personName;
+    public String personEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,12 +90,21 @@ public class MainActivity extends AppCompatActivity {
 
         RetrofitBuilder retrofitBuilder = new RetrofitBuilder();
         mPingPongService = retrofitBuilder.getService();
+
+        userInfo = (UserInfo) getIntent().getSerializableExtra(UserInfo.EXTRA);
+
+        final  GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
+        if (acct != null) {
+            personName = acct.getDisplayName();
+            personEmail = acct.getEmail();
+        }
+        Log.d("FromTo", "from: " + personName + " to: " + userInfo.getPersonName());
     }
 
     public void onRecord(View view) {
         // should be get from user info later
-        final String from = "wonyeong";
-        final String to = "minwoo";
+        final String from = personName;
+        final String to = userInfo.getPersonName();
 
         if (isRecording == true) {
             isRecording = false;
@@ -233,9 +237,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void onServerPlay(View view) {
         // should be get from user info later
-        final String from = "wonyeong";
-        final String to = "minwoo";
-        sFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + "_Sever.wav";
+        final String from = userInfo.getPersonName();
+        final String to = personName;
+        sFilepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + ".wav";
 
         Call<ResponseBody> call = mPingPongService.getRecordFrom(from, to);
         call.enqueue(new Callback<ResponseBody>() {

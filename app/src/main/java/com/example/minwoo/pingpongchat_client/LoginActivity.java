@@ -3,7 +3,6 @@ package com.example.minwoo.pingpongchat_client;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,7 +12,6 @@ import android.widget.Toast;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInApi;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
@@ -21,20 +19,12 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -132,7 +122,7 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
                 GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
 
                 // Signed in Google successfully, try to sign in to Server.
-                JsonObject personData = addProperty(account);
+                JsonObject personData = createPersonObject(account);
                 requestResult(personData);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -151,7 +141,7 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
             showProgressDialog();
 
             // Signed in Google successfully, try to sign in to Server.
-            JsonObject personData = addProperty(account);
+            JsonObject personData = createPersonObject(account);
             requestResult(personData);
         } catch (ApiException e) {
             e.printStackTrace();
@@ -187,7 +177,7 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
         // ...
     }
 
-    private JsonObject addProperty(GoogleSignInAccount account){
+    private JsonObject createPersonObject(GoogleSignInAccount account){
         String personName = account.getDisplayName();
         String personEmail = account.getEmail();
         String personIdToken = account.getIdToken();

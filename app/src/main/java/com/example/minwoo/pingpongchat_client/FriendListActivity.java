@@ -1,8 +1,6 @@
 package com.example.minwoo.pingpongchat_client;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -14,20 +12,16 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
-import com.example.minwoo.pingpongchat_client.LoginActivity;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.gson.JsonArray;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import com.google.gson.Gson;
 
 public class FriendListActivity extends AppCompatActivity {
 
@@ -86,8 +80,13 @@ public class FriendListActivity extends AppCompatActivity {
                     // 터치한 항목이 본인이면 프로필 액티비티로 전환
                     if(Objects.equals(acct.getEmail(), userInfo.personEmail)
                     && Objects.equals(acct.getDisplayName(), userInfo.personName)){
-                        Intent loginIntent = new Intent(FriendListActivity.this, UserProfileActivity.class);
-                        FriendListActivity.this.startActivity(loginIntent);
+                        Intent profileIntent = new Intent(FriendListActivity.this, UserProfileActivity.class);
+                        FriendListActivity.this.startActivity(profileIntent);
+                    } else {
+                        Log.d("userinfo", "Name :" + userInfo.getPersonName() + " Email : " + userInfo.getPersonEmail());
+                        Intent intent = new Intent(FriendListActivity.this, MainActivity.class);
+                        intent.putExtra(UserInfo.EXTRA, userInfo);
+                        startActivity(intent);
                     }
                     return true;
                 }

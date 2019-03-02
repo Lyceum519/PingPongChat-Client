@@ -1,7 +1,6 @@
 package com.example.minwoo.pingpongchat_client;
 
 import android.os.Environment;
-import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,7 +14,7 @@ public class HandleResponse {
     public static boolean writeResponseBodyToDisk(ResponseBody body, String from, String to) {
         try {
             // todo change the file location/name according to your needs
-            File futureStudioIconFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + "_Sever.wav");
+            File futureStudioIconFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + from + "To" + to + ".wav");
 
             InputStream inputStream = null;
             OutputStream outputStream = null;
