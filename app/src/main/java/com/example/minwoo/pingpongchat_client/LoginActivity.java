@@ -1,8 +1,11 @@
 package com.example.minwoo.pingpongchat_client;
 
+import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,6 +28,10 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.tasks.Task;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
+
+import java.util.ArrayList;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,10 +49,17 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
     private ProgressDialog mProgressDialog;
     private RetrofitBuilder.PingPongService mPingPongService;
 
+    private static final int MESSAGE_PERMISSION_GRANTED = 101;
+    private static final int MESSAGE_PERMISSION_DENIED = 102;
+
+    public MainHandler mainHandler = new MainHandler();
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        showPermissionDialog();
 
         signInButton = findViewById(R.id.btn_googleSignIn);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
@@ -217,5 +231,46 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
                 Toast.makeText(LoginActivity.this, "서버 로그인 실패", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private class MainHandler extends Handler {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case MESSAGE_PERMISSION_GRANTED:
+                    Log.d("Permission", "Permission Granted");
+                    break;
+                case MESSAGE_PERMISSION_DENIED :
+                    Log.d("Permission", "Permission Denied");
+                    finish();
+                    break;
+                default:
+                    super.handleMessage(msg);
+                    break;
+            }
+        }
+    }
+
+    private void showPermissionDialog() {
+        PermissionListener permissionListener = new PermissionListener() {
+            @Override
+            public void onPermissionGranted() {
+                Log.d("Permission", "Permission Granted");
+                mainHandler.sendEmptyMessage(MESSAGE_PERMISSION_GRANTED);
+            }
+
+            @Override
+            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+                Log.d("Permission", "Permission Denied");
+                mainHandler.sendEmptyMessage(MESSAGE_PERMISSION_DENIED);
+            }
+        };
+
+        new TedPermission(this)
+                .setPermissionListener(permissionListener)
+                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.RECORD_AUDIO,
+                        Manifest.permission.INTERNET)
+                .check();
     }
 }

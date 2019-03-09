@@ -1,8 +1,6 @@
 package com.example.minwoo.pingpongchat_client;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -13,8 +11,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -77,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        permissionCheck();
-
         mIV_record = (ImageView) findViewById(R.id.record);
 
         sBtPlay = (Button) findViewById(R.id.bt_play);
@@ -93,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         userInfo = (UserInfo) getIntent().getSerializableExtra(UserInfo.EXTRA);
 
-        final  GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
+        final GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
         if (acct != null) {
             personName = acct.getDisplayName();
             personEmail = acct.getEmail();
@@ -323,13 +317,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    public void permissionCheck() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
-                || ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, 1);
-        }
-    }  //퍼미션 체크
 
     // upload file to server
     private void uploadFile(String path, String from, String to) {
