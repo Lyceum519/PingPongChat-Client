@@ -1,6 +1,5 @@
 package com.example.minwoo.pingpongchat_client;
 
-import android.content.Intent;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -10,18 +9,14 @@ import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -74,8 +69,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mIV_record = (ImageView) findViewById(R.id.record);
-
-        sBtPlay = (Button) findViewById(R.id.bt_play);
 
         mAudioRecord = new AudioRecord(mAudioSource, mSampleRate, mChannelCount, mAudioFormat, mBufferSize);
         mAudioRecord.startRecording();
@@ -157,75 +150,6 @@ public class MainActivity extends AppCompatActivity {
                 mAudioRecord.startRecording();
             }
             mRecordThread.start();
-        }
-    }
-
-    public void onPlay(View view) {
-        if (mFilepath == null) {
-            Toast.makeText(MainActivity.this, "재생할 파일이 없습니다.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (isPlaying == true) {
-            isPlaying = false;
-            sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
-        } else {
-            isPlaying = true;
-            sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
-
-            mPlayThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    byte[] writeData = new byte[mBufferSize];
-                    FileInputStream fis = null;
-                    try {
-                        fis = new FileInputStream(mFilepath);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                        mPlayThread.interrupt();
-                    }
-
-                    DataInputStream dis = new DataInputStream(fis);
-                    mAudioTrack.play();
-
-                    while (isPlaying) {
-                        try {
-                            int ret = dis.read(writeData, 0, mBufferSize);
-                            if (ret <= 0) {
-                                (MainActivity.this).runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        isPlaying = false;
-                                        sBtPlay.setText("Play");
-                                    }
-                                });
-
-                                break;
-                            }
-                            mAudioTrack.write(writeData, 0, ret);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    mAudioTrack.stop();
-                    mAudioTrack.release();
-                    mAudioTrack = null;
-
-                    try {
-                        dis.close();
-                        fis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            if (mAudioTrack == null) {
-                mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, mSampleRate, mChannelCount, mAudioFormat, mBufferSize, AudioTrack.MODE_STREAM);
-            }
-            mPlayThread.start();
         }
     }
 
@@ -362,19 +286,5 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("Upload error:", t.getMessage());
             }
         });
-    }
-
-    //Google Logout
-    public void signOut(View view) {
-        LoginActivity.mGoogleSignInClient
-                .signOut()
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Toast.makeText(MainActivity.this, "로그아웃 성공", Toast.LENGTH_SHORT).show();
-                        Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-                        MainActivity.this.startActivity(loginIntent);
-                    }
-                });
     }
 }

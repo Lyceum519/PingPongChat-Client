@@ -80,8 +80,8 @@ public class FriendListActivity extends AppCompatActivity {
                     // 해당 위치의 Data를 가져옴
                     UserInfo userInfo = UserInfoArrayList.get(currentPosition);
                     // 터치한 항목이 본인이면 프로필 액티비티로 전환
-                    if(Objects.equals(acct.getEmail(), userInfo.personEmail)
-                    && Objects.equals(acct.getDisplayName(), userInfo.personName)){
+                    if (Objects.equals(acct.getEmail(), userInfo.personEmail)
+                        && Objects.equals(acct.getDisplayName(), userInfo.personName)){
                         Intent profileIntent = new Intent(FriendListActivity.this, UserProfileActivity.class);
                         FriendListActivity.this.startActivity(profileIntent);
                     } else {
@@ -117,12 +117,16 @@ public class FriendListActivity extends AppCompatActivity {
                         String friendName = FriendInfo.get(i).getFriendName();
                         String friendEmail = FriendInfo.get(i).getfriendEmail();
                         String friendPhoto = FriendInfo.get(i).getFriendPhoto();
-                        UserInfoArrayList.add(new UserInfo(friendName, friendEmail, friendPhoto));
-                        MyAdapter myAdapter = new MyAdapter(FriendListActivity.this, UserInfoArrayList);
-                        mRecyclerView.setAdapter(myAdapter);
-                        Log.i("HASIL", "friendEmail: "+friendEmail);
-                        Log.i("HASIL", "friendName: "+friendName);
-                        Log.i("HASIL", "friendPhoto: "+friendPhoto);
+
+                        if (!Objects.equals(acct.getEmail(), friendEmail)
+                            && Objects.equals(acct.getDisplayName(), friendName)){
+                            UserInfoArrayList.add(new UserInfo(friendName, friendEmail, friendPhoto));
+                            MyAdapter myAdapter = new MyAdapter(FriendListActivity.this, UserInfoArrayList);
+                            mRecyclerView.setAdapter(myAdapter);
+                            Log.i("HASIL", "friendEmail: "+friendEmail);
+                            Log.i("HASIL", "friendName: "+friendName);
+                            Log.i("HASIL", "friendPhoto: "+friendPhoto);
+                        }
                     }
                 } catch (Exception e) {
                     Log.d("onResponse", "There is an error");
