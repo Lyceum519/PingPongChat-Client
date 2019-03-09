@@ -29,6 +29,7 @@ public class FriendListActivity extends AppCompatActivity {
     RecyclerView.LayoutManager mLayoutManager;
     private GestureDetector gestureDetector;
     private RetrofitBuilder.PingPongService mPingPongService;
+    private BackPressCloseHandler backPressCloseHandler;
     public static List<FriendInfo> FriendInfo = new ArrayList<>();
 
     @Override
@@ -41,6 +42,7 @@ public class FriendListActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+        backPressCloseHandler = new BackPressCloseHandler(this);
         gestureDetector = new GestureDetector(getApplicationContext(), new GestureDetector.SimpleOnGestureListener() {
             // 누르고 뗄 때 한번만 인식하도록 하기위해서
             @Override
@@ -135,5 +137,10 @@ public class FriendListActivity extends AppCompatActivity {
                 // Code...
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        backPressCloseHandler.onBackPressed();
     }
 }
