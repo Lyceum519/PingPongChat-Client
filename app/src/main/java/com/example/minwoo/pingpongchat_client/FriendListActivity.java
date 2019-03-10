@@ -118,15 +118,16 @@ public class FriendListActivity extends AppCompatActivity {
                         String friendEmail = FriendInfo.get(i).getfriendEmail();
                         String friendPhoto = FriendInfo.get(i).getFriendPhoto();
 
-                        if (!Objects.equals(acct.getEmail(), friendEmail)
+                        if (Objects.equals(acct.getEmail(), friendEmail)
                             && Objects.equals(acct.getDisplayName(), friendName)){
-                            UserInfoArrayList.add(new UserInfo(friendName, friendEmail, friendPhoto));
-                            MyAdapter myAdapter = new MyAdapter(FriendListActivity.this, UserInfoArrayList);
-                            mRecyclerView.setAdapter(myAdapter);
-                            Log.i("HASIL", "friendEmail: "+friendEmail);
-                            Log.i("HASIL", "friendName: "+friendName);
-                            Log.i("HASIL", "friendPhoto: "+friendPhoto);
+                           continue;
                         }
+                        UserInfoArrayList.add(new UserInfo(friendName, friendEmail, friendPhoto));
+                        MyAdapter myAdapter = new MyAdapter(FriendListActivity.this, UserInfoArrayList);
+                        mRecyclerView.setAdapter(myAdapter);
+                        Log.i("Friend List", "friendEmail: "+friendEmail);
+                        Log.i("Friend List", "friendName: "+friendName);
+                        Log.i("Friend List", "friendPhoto: "+friendPhoto);
                     }
                 } catch (Exception e) {
                     Log.d("onResponse", "There is an error");
