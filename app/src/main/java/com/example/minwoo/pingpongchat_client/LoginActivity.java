@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -25,7 +26,10 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.gun0912.tedpermission.PermissionListener;
@@ -36,6 +40,8 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import static android.support.constraint.Constraints.TAG;
 
 public class LoginActivity extends AppCompatActivity implements OnConnectionFailedListener {
     // 구글로그인 result 상수
@@ -48,6 +54,8 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
     private GoogleApiClient mGoogleApiClient;
     private ProgressDialog mProgressDialog;
     private RetrofitBuilder.PingPongService mPingPongService;
+    // FCM token
+    private static String firebaseCloudMessagingToken;
 
     private static final int MESSAGE_PERMISSION_GRANTED = 101;
     private static final int MESSAGE_PERMISSION_DENIED = 102;
@@ -92,6 +100,22 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
                 }
             }
         });
+
+        //FCM Token 얻기
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "getInstanceId failed", task.getException());
+                            return;
+                        }
+                        // Get new Instance ID token
+                        firebaseCloudMessagingToken = task.getResult().getToken();
+                        // Log
+                        Log.d("FCM token : ", firebaseCloudMessagingToken);
+                    }
+                });
     }
 
     @Override
@@ -145,7 +169,7 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
             // Signed out, show unauthenticated UI.
             //Toast.makeText(LoginActivity.this, "로그인 실패", Toast.LENGTH_SHORT).show();
             hideProgressDialog();
-            Log.e("GoogleLogin ","Google silent sign in failed" );
+            Log.e("GoogleLogin ", "Google silent sign in failed");
         }
     }
 
@@ -191,7 +215,7 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
         // ...
     }
 
-    private JsonObject createPersonObject(GoogleSignInAccount account){
+    private JsonObject createPersonObject(GoogleSignInAccount account) {
         String personName = account.getDisplayName();
         String personEmail = account.getEmail();
         String personIdToken = account.getIdToken();
@@ -201,16 +225,18 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
         personData.addProperty("email", personEmail);
         personData.addProperty("token", personIdToken);
         personData.addProperty("photo", personPhotoUrl);
+        personData.addProperty("client_token", firebaseCloudMessagingToken);
 
         Log.i("GoogleLogin", "personName=" + personName);
         Log.i("GoogleLogin", "personEmail=" + personEmail);
         Log.i("GoogleLogin", "personIdToken=" + personIdToken);
         Log.i("GoogleLogin", "personPhotoUrl=" + personPhotoUrl);
+        Log.i("GoogleLogin", "personFCMToken=" + firebaseCloudMessagingToken);
 
         return personData;
     }
 
-    private void requestResult(JsonObject personData){
+    private void requestResult(JsonObject personData) {
         Call<JsonArray> request = mPingPongService.signin(personData);
         request.enqueue(new Callback<JsonArray>() {
             @Override
@@ -236,11 +262,11 @@ public class LoginActivity extends AppCompatActivity implements OnConnectionFail
     private class MainHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            switch (msg.what){
+            switch (msg.what) {
                 case MESSAGE_PERMISSION_GRANTED:
                     Log.d("Permission", "Permission Granted");
                     break;
-                case MESSAGE_PERMISSION_DENIED :
+                case MESSAGE_PERMISSION_DENIED:
                     Log.d("Permission", "Permission Denied");
                     finish();
                     break;

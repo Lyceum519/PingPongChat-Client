@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "54618363609-6ip14b7112fdhqbrj3qk3ng00gjembl5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.minwoo.pingpongchat_client",
+            "certificate_hash": "7f81ae1b1a6aa92e881b2827361df137016afe60"
+          }
+        },
+        {
           "client_id": "54618363609-gf6br8b3i3jvs5c7fjc0asdfum969m3u.apps.googleusercontent.com",
           "client_type": 3
         }
