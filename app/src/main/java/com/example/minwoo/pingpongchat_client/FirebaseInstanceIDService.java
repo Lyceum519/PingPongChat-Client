@@ -12,7 +12,6 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 public class FirebaseInstanceIDService extends FirebaseMessagingService {
-
     /**
      * 구글 토큰을 얻는 값입니다.
      * 아래 토큰은 앱이 설치된 디바이스에 대한 고유값으로 푸시를 보낼때 사용됩니다.
@@ -22,7 +21,6 @@ public class FirebaseInstanceIDService extends FirebaseMessagingService {
         super.onNewToken(s);
         Log.i("Firebase1", "FirebaseInstanceIDService : " + s);
     }
-
     /**
      * 메세지를 받았을 경우 그 메세지에 대하여 구현하는 부분입니다.
      * **/
@@ -32,15 +30,12 @@ public class FirebaseInstanceIDService extends FirebaseMessagingService {
             sendNotification(remoteMessage);
         }
     }
-
-
     /**
      * remoteMessage 메세지 안애 getData와 getNotification이 있습니다.
      * **/
     private void sendNotification(RemoteMessage remoteMessage) {
         String title = remoteMessage.getData().get("title");
         String message = remoteMessage.getData().get("message");
-
         /**
          * 오레오 버전부터는 Notification Channel이 없으면 푸시가 생성되지 않는 현상이 있습니다.
          * **/

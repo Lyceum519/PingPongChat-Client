@@ -3,6 +3,8 @@ package com.example.minwoo.pingpongchat_client;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import com.example.minwoo.pingpongchat_client.data.model.PushData;
+
 import java.util.List;
 
 import okhttp3.MultipartBody;
@@ -23,7 +25,7 @@ public class RetrofitBuilder {
 
     public RetrofitBuilder() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://172.20.10.7:7001/")
+                .baseUrl("http://172.30.35.194:7001/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
@@ -56,5 +58,8 @@ public class RetrofitBuilder {
 
         @POST("signout")
         Call<JsonArray> signout(@Body JsonObject data);
+
+        @POST("push_data")
+        Call<JsonArray> push_data(@Body JsonObject data);
     }
 }

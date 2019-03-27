@@ -1,5 +1,6 @@
 package com.example.minwoo.pingpongchat_client;
 
+import android.content.Intent;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -14,9 +15,17 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.example.minwoo.pingpongchat_client.data.model.Data;
+import com.example.minwoo.pingpongchat_client.data.model.Notification;
+import com.example.minwoo.pingpongchat_client.data.model.PushData;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -24,6 +33,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -63,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
     public String personName;
     public String personEmail;
 
+    public DateFormat dateFormat;
+    public Date date;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         mPingPongService = retrofitBuilder.getService();
 
         userInfo = (UserInfo) getIntent().getSerializableExtra(UserInfo.EXTRA);
+
+        dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        date = new Date();
 
         final GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(this);
         if (acct != null) {
@@ -139,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
                         fos.close();
                         // test uploading file
                         uploadFile(mFilepath, from, to);
+                        JsonObject pushData = createPushData();
+                        requestPushData(pushData);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -284,6 +304,42 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.e("Upload error:", t.getMessage());
+            }
+        });
+    }
+
+    private JsonObject createPushData() {
+        PushData pushData = new PushData();
+        pushData.setNotification(new Notification());
+        pushData.setData(new Data());
+        pushData.setTo(userInfo.getPersonEmail());
+        pushData.setPriority("high");
+        pushData.setRestrictedPackageName("com.example.minwoo.pingpongchat_client");
+        pushData.getNotification().setTitle("Node");
+        pushData.getNotification().setBody("Node로 발송하는 Push 메시지 입니다.");
+        pushData.getData().setDate(dateFormat.format(date));
+
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(pushData);
+        JsonObject convertedObject = new Gson().fromJson(jsonString, JsonObject.class);
+
+        Log.d("pushdata", "pushData to :" + pushData.getTo());
+        Log.d("pushdata", "pushData data :" + pushData.getData().getDate());
+
+        return convertedObject;
+    }
+
+    private void requestPushData(JsonObject data) {
+        Call<JsonArray> request = mPingPongService.push_data(data);
+        request.enqueue(new Callback<JsonArray>() {
+            @Override
+            public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                Toast.makeText(MainActivity.this, "PushData 서버 전송 성공", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<JsonArray> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "PushData 서버 전송 실패", Toast.LENGTH_SHORT).show();
             }
         });
     }
