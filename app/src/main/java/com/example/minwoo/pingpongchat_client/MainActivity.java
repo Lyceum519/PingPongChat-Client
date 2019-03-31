@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                         fos.close();
                         // test uploading file
                         uploadFile(mFilepath, from, to);
-                        JsonObject pushData = createPushData();
+                        JsonObject pushData = createPushData(from);
                         requestPushData(pushData);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -308,16 +308,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private JsonObject createPushData() {
+    private JsonObject createPushData(String from) {
         PushData pushData = new PushData();
         pushData.setNotification(new Notification());
         pushData.setData(new Data());
         pushData.setTo(userInfo.getPersonEmail());
         pushData.setPriority("high");
         pushData.setRestrictedPackageName("com.example.minwoo.pingpongchat_client");
-        pushData.getNotification().setTitle("Node");
-        pushData.getNotification().setBody("Node로 발송하는 Push 메시지 입니다.");
+        pushData.getNotification().setTitle(from+"님이 메시지를 보냈습니다.");
+        pushData.getNotification().setBody("새로운 메시지가 도착했습니다.");
         pushData.getData().setDate(dateFormat.format(date));
+        pushData.getData().setTitle(from+"님이 메시지를 보냈습니다.");
+        pushData.getData().setMessage("새로운 메시지가 도착했습니다.");
 
         Gson gson = new Gson();
         String jsonString = gson.toJson(pushData);
@@ -334,11 +336,13 @@ public class MainActivity extends AppCompatActivity {
         request.enqueue(new Callback<JsonArray>() {
             @Override
             public void onResponse(Call<JsonArray> call, Response<JsonArray> response) {
+                Log.d("PushData Success", response.toString());
                 Toast.makeText(MainActivity.this, "PushData 서버 전송 성공", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<JsonArray> call, Throwable t) {
+                Log.d("PushData Fail", t.toString());
                 Toast.makeText(MainActivity.this, "PushData 서버 전송 실패", Toast.LENGTH_SHORT).show();
             }
         });
