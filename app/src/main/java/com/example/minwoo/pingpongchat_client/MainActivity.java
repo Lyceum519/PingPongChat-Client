@@ -65,8 +65,6 @@ public class MainActivity extends AppCompatActivity {
     public Thread mPlayThread = null;
     public boolean isPlaying = false;
 
-    public Button sBtPlay = null;
-
     public String mFilepath = null;
     public String sFilepath = null;
 
@@ -189,11 +187,8 @@ public class MainActivity extends AppCompatActivity {
 
                 if (isPlaying == true) {
                     isPlaying = false;
-                    sBtPlay.setText("play");  // 'Stop'버튼 클릭 시, isPlaying 상태값을 false으로 변경 / 'Play'버튼으로 변경
                 } else {
                     isPlaying = true;
-                    sBtPlay.setText("Stop");  // 'Play'버튼 클리 시, isPlaying 상태값을 true로 변경 / 'Stop'버튼으로 변경
-
                     mPlayThread = new Thread(new Runnable() {
                         @Override
                         public void run() {
@@ -217,7 +212,6 @@ public class MainActivity extends AppCompatActivity {
                                             @Override
                                             public void run() {
                                                 isPlaying = false;
-                                                sBtPlay.setText("Play");
                                             }
                                         });
 
